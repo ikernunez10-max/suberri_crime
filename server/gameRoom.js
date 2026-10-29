@@ -22,10 +22,10 @@ class GameRoom {
       maxPlayers: 8,
       impostorCount: 1, // 1 or 2
       moveSpeed: 1.5, // 1.0x to 3.0x
-      crewVision: 1.0, // multiplier
-      impostorVision: 1.5,
+      crewVision: 1.6, // Mayor campo de visión para la tripulación (antes 1.0)
+      impostorVision: 2.2, // Mayor campo de visión para los criminales (antes 1.5)
       killCooldown: 25, // seconds
-      killDistance: 'medium', // short(60), medium(110), long(160)
+      killDistance: 'medium', // short(90), medium(150), long(210)
       discussionTime: 15, // seconds
       votingTime: 30, // seconds
       tasksCount: 4, // per crewmate
@@ -555,8 +555,8 @@ class GameRoom {
     if (target.isDead || target.role === 'criminal') return { success: false, reason: 'Objetivo inválido' };
     if (criminal.killCooldown > 0) return { success: false, reason: 'Cooldown activo' };
 
-    const killRanges = { short: 70, medium: 120, long: 170 };
-    const maxDist = killRanges[this.settings.killDistance] || 120;
+    const killRanges = { short: 100, medium: 160, long: 220 };
+    const maxDist = killRanges[this.settings.killDistance] || 160;
     const dist = distance(criminal.x, criminal.y, target.x, target.y);
 
     if (dist > maxDist) {
@@ -824,12 +824,12 @@ class GameRoom {
     for (const player of this.players.values()) {
       if (!player.ws || player.ws.readyState !== 1) continue;
 
-      // Calculate vision radius for this player
+      // Calculate vision radius for this player (mayor amplitud base)
       let visionMult = player.role === 'criminal' ? this.settings.impostorVision : this.settings.crewVision;
       if (this.sabotages.lights.active && player.role === 'innocent') {
-        visionMult = 0.25; // Lights sabotage drastically reduces crew vision (RF-06)
+        visionMult = 0.35; // Lights sabotage drastically reduces crew vision (RF-06)
       }
-      const maxVisionRadius = 350 * visionMult;
+      const maxVisionRadius = 500 * visionMult; // Incrementado radio base de 350 a 500
 
       // Filter visible players using server raycast (RF-03 Anti-Wallhack)
       const visiblePlayers = [];

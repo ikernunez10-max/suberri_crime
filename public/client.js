@@ -330,33 +330,33 @@ const WALLS = [
 
   // Aulas Norte
   [740, 140, 740, 420], [1000, 140, 1000, 420],
-  [740, 420, 840, 420], [900, 420, 1000, 420],
+  [740, 420, 810, 420], [930, 420, 1000, 420],
   [1000, 140, 1000, 420], [1300, 140, 1300, 420],
-  [1000, 420, 1120, 420], [1180, 420, 1300, 420],
+  [1000, 420, 1090, 420], [1210, 420, 1300, 420],
   [1300, 140, 1300, 420], [1600, 140, 1600, 420],
-  [1300, 420, 1420, 420], [1480, 420, 1600, 420],
+  [1300, 420, 1390, 420], [1510, 420, 1600, 420],
   [1600, 140, 1600, 480],
-  [1600, 480, 1720, 480], [1780, 480, 1880, 480],
+  [1600, 480, 1690, 480], [1810, 480, 1880, 480],
 
   // Núcleo Central (Aseos y Escaleras)
   [860, 460, 1020, 460], [860, 640, 1020, 640],
-  [860, 460, 860, 520], [860, 580, 860, 640],
+  [860, 460, 860, 500], [860, 600, 860, 640],
   [1020, 460, 1020, 640],
   [1020, 460, 1280, 460], [1020, 640, 1280, 640],
-  [1280, 460, 1280, 520], [1280, 580, 1280, 640],
+  [1280, 460, 1280, 500], [1280, 600, 1280, 640],
 
   // Ala Oeste
-  [580, 420, 580, 520], [580, 580, 580, 680],
+  [580, 420, 580, 490], [580, 610, 580, 680],
   [280, 680, 580, 680],
-  [580, 680, 580, 760], [580, 820, 580, 1140],
+  [580, 680, 580, 730], [580, 850, 580, 1140],
 
   // Ala Este
-  [1600, 480, 1600, 560], [1600, 620, 1600, 700],
+  [1600, 480, 1600, 530], [1600, 650, 1600, 700],
 
   // Aulas Sur
-  [580, 700, 700, 700], [760, 700, 980, 700],
-  [1040, 700, 1260, 700], [1320, 700, 1520, 700],
-  [1580, 700, 1780, 700], [1840, 700, 1880, 700],
+  [580, 700, 680, 700], [800, 700, 950, 700],
+  [1070, 700, 1230, 700], [1350, 700, 1490, 700],
+  [1610, 700, 1750, 700], [1870, 700, 1880, 700],
   [870, 700, 870, 1140], [1150, 700, 1150, 1140],
   [1430, 700, 1430, 1140], [1670, 700, 1670, 1140]
 ];
@@ -445,9 +445,9 @@ function renderGameUI(tick) {
       btnKill.disabled = true;
     } else {
       cdText.style.display = 'none';
-      // Find eligible alive target in range
-      const killRanges = { short: 70, medium: 120, long: 170 };
-      const maxDist = killRanges[tick.settings.killDistance] || 120;
+      // Find eligible alive target in range (rango ampliado para que matar sea mucho más fluido)
+      const killRanges = { short: 100, medium: 160, long: 220 };
+      const maxDist = killRanges[tick.settings.killDistance] || 160;
       const target = tick.players.find(p => p.id !== me.id && !p.isDead && p.role !== 'criminal' && Math.hypot(p.x - me.x, p.y - me.y) <= maxDist);
       btnKill.disabled = !target || me.isDead;
       btnKill.onclick = () => {
@@ -512,10 +512,10 @@ function renderGameUI(tick) {
     }
   }
 
-  // Check normal tasks
+  // Check normal tasks (rango de interacción aumentado a 110px para fácil acceso)
   if (!useAction) {
     const uncompletedTasks = me.tasks.filter(t => !t.completed);
-    const nearTask = uncompletedTasks.find(t => Math.hypot(t.x - me.x, t.y - me.y) <= 80);
+    const nearTask = uncompletedTasks.find(t => Math.hypot(t.x - me.x, t.y - me.y) <= 110);
     if (nearTask && !me.isDead) {
       useAction = () => openTaskModal(nearTask);
     }
@@ -1381,17 +1381,17 @@ function renderCanvasLoop() {
 
   // 9. Client Fog of War Overlay (Visual smoothness)
   if (!me.isDead) {
-    let visionMult = me.role === 'criminal' ? lastServerTick.settings.impostorVision : lastServerTick.settings.crewVision;
+    let visionMult = me.role === 'criminal' ? (lastServerTick.settings.impostorVision || 2.2) : (lastServerTick.settings.crewVision || 1.6);
     if (lastServerTick.sabotages.lights.active && me.role === 'innocent') {
-      visionMult = 0.25;
+      visionMult = 0.35;
     }
-    const visionRadius = 350 * visionMult;
+    const visionRadius = 500 * visionMult;
 
-    // Dark mask with transparent circle at player
-    const grad = ctx.createRadialGradient(me.x, me.y, visionRadius * 0.4, me.x, me.y, visionRadius);
+    // Dark mask with transparent circle at player (más amplio y suave)
+    const grad = ctx.createRadialGradient(me.x, me.y, visionRadius * 0.55, me.x, me.y, visionRadius);
     grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    grad.addColorStop(0.85, 'rgba(0, 0, 0, 0.4)');
-    grad.addColorStop(1, 'rgba(0, 0, 0, 0.96)');
+    grad.addColorStop(0.85, 'rgba(0, 0, 0, 0.3)');
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0.94)');
 
     ctx.fillStyle = grad;
     ctx.fillRect(camera.x - width, camera.y - height, width * 2, height * 2);
