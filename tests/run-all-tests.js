@@ -73,16 +73,16 @@ runTest('RNF-04 / CP-NET-01: Detección y resolución de colisión con paredes e
 
 // 3. Fog of War Raycasting (RF-03, CP-VIS-03)
 runTest('RF-03: Oclusión visual por raycasting (No Wallhacks)', () => {
-  // Test straight line of sight through Cafeteria wall [800, 150, 800, 450]
-  const p1 = { x: 700, y: 300 }; // Outside cafeteria
-  const p2 = { x: 900, y: 300 }; // Inside cafeteria
+  // Test straight line of sight through Aula 101 wall [740, 140, 740, 420]
+  const p1 = { x: 650, y: 300 }; // Despacho / Pasillo oeste
+  const p2 = { x: 850, y: 300 }; // Inside Aula 101
 
   const visibleThroughWall = hasLineOfSight(p1.x, p1.y, p2.x, p2.y, WALLS, [], 400);
   assert.strictEqual(visibleThroughWall, false, 'Entidades detrás de paredes sólidas no deben ser visibles');
 
-  // Test clear unobstructed line of sight inside cafeteria
-  const p3 = { x: 920, y: 300 };
-  const p4 = { x: 1050, y: 300 };
+  // Test clear unobstructed line of sight inside the same classroom
+  const p3 = { x: 800, y: 300 };
+  const p4 = { x: 920, y: 300 };
   const visibleClear = hasLineOfSight(p3.x, p3.y, p4.x, p4.y, WALLS, [], 400);
   assert.strictEqual(visibleClear, true, 'Entidades en la misma sala sin obstáculos deben ser visibles');
 });

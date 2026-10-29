@@ -87,10 +87,10 @@ class GameRoom {
 
     // Door wall segments when closed
     this.doorSegments = {
-      cafeteria: [ [950, 150, 1050, 150], [920, 450, 1080, 450] ],
-      electrical: [ [700, 800, 700, 880] ],
-      medbay: [ [750, 520, 750, 580] ],
-      storage: [ [850, 850, 950, 850] ]
+      sala_reuniones: [ [580, 760, 580, 820] ],
+      aula_101: [ [840, 420, 900, 420] ],
+      laboratorio_norte: [ [1720, 480, 1780, 480] ],
+      taller_2: [ [1780, 700, 1840, 700] ]
     };
 
     this.tickInterval = null;
@@ -191,10 +191,10 @@ class GameRoom {
 
     // Spawn point: around Cafeteria table
     const spawnPoints = [
-      { x: 960, y: 240 }, { x: 1040, y: 240 },
-      { x: 940, y: 300 }, { x: 1060, y: 300 },
-      { x: 960, y: 360 }, { x: 1040, y: 360 },
-      { x: 900, y: 300 }, { x: 1100, y: 300 }
+      { x: 1040, y: 660 }, { x: 1080, y: 660 },
+      { x: 1000, y: 660 }, { x: 1040, y: 620 },
+      { x: 1040, y: 700 }, { x: 960, y: 660 },
+      { x: 1120, y: 660 }, { x: 1040, y: 580 }
     ];
 
     let pIndex = 0;
@@ -447,10 +447,10 @@ class GameRoom {
       if (this.state === 'voting' && !this.winner) {
         this.state = 'playing';
         this.deadBodies = []; // Clear reported bodies
-        // Reset player positions to cafeteria table
+        // Reset player positions to central hall
         for (const p of this.players.values()) {
-          p.x = 1000 + (Math.random() * 80 - 40);
-          p.y = 280 + (Math.random() * 80 - 40);
+          p.x = 1040 + (Math.random() * 80 - 40);
+          p.y = 660 + (Math.random() * 60 - 30);
           p.inVent = null;
           p.killCooldown = this.settings.killCooldown;
         }
@@ -518,8 +518,8 @@ class GameRoom {
       player.killCooldown = this.settings.killCooldown;
       player.tasks = [];
       player.votedFor = null;
-      player.x = 1000 + (Math.random() * 80 - 40);
-      player.y = 280 + (Math.random() * 80 - 40);
+      player.x = 1040 + (Math.random() * 80 - 40);
+      player.y = 660 + (Math.random() * 60 - 30);
       player.inputs = { up: false, down: false, left: false, right: false };
     }
 

@@ -301,61 +301,82 @@ function sendInputs() {
   }
 }
 
-// --- Map Constants (Mirror of Server Definition) ---
+// --- Map Constants (Mirror of Server Definition - Suberri 1. Solairua) ---
 const ROOMS = [
-  { id: 'cafeteria', name: 'Cafetería / Centro de Mando', x: 800, y: 150, w: 400, h: 300, isMeetingRoom: true },
-  { id: 'weapons', name: 'Armería', x: 1350, y: 200, w: 300, h: 250 },
-  { id: 'navigation', name: 'Navegación', x: 1500, y: 600, w: 350, h: 300 },
-  { id: 'shields', name: 'Escudos', x: 1350, y: 1050, w: 300, h: 250 },
-  { id: 'o2', name: 'Soporte Vital (O2)', x: 1100, y: 650, w: 250, h: 200 },
-  { id: 'admin', name: 'Administración', x: 950, y: 950, w: 300, h: 250 },
-  { id: 'communications', name: 'Comunicaciones', x: 1100, y: 1250, w: 250, h: 200 },
-  { id: 'storage', name: 'Almacén Central', x: 750, y: 850, w: 350, h: 400 },
-  { id: 'electrical', name: 'Electricidad', x: 450, y: 700, w: 250, h: 250 },
-  { id: 'medbay', name: 'Enfermería', x: 500, y: 400, w: 250, h: 250 },
-  { id: 'security', name: 'Seguridad', x: 350, y: 550, w: 200, h: 200 },
-  { id: 'reactor', name: 'Reactor Nuclear', x: 100, y: 500, w: 250, h: 400 },
-  { id: 'upper_engine', name: 'Motor Superior', x: 300, y: 200, w: 250, h: 250 },
-  { id: 'lower_engine', name: 'Motor Inferior', x: 300, y: 1050, w: 250, h: 250 }
+  { id: 'aula_101', name: 'Aula 101 (Norte)', x: 740, y: 160, w: 260, h: 260 },
+  { id: 'aula_102', name: 'Aula 102 (Norte)', x: 1020, y: 160, w: 280, h: 260 },
+  { id: 'aula_103', name: 'Aula 103 (Norte)', x: 1320, y: 160, w: 280, h: 260 },
+  { id: 'laboratorio_norte', name: 'Laboratorio Norte', x: 1620, y: 160, w: 240, h: 320 },
+  { id: 'despacho_oeste', name: 'Despacho Orientación', x: 300, y: 460, w: 280, h: 220 },
+  { id: 'sala_reuniones', name: 'Sala de Profesores / Reuniones', x: 300, y: 700, w: 280, h: 420, isMeetingRoom: true },
+  { id: 'aula_104', name: 'Aula 104 (Punto Seguro)', x: 600, y: 700, w: 260, h: 420 },
+  { id: 'aula_105', name: 'Aula 105 (Sur)', x: 880, y: 700, w: 260, h: 420 },
+  { id: 'aula_106', name: 'Aula 106 (Sur)', x: 1160, y: 700, w: 260, h: 420 },
+  { id: 'taller_1', name: 'Taller Técnico 1', x: 1440, y: 700, w: 220, h: 420 },
+  { id: 'taller_2', name: 'Taller Técnico 2', x: 1680, y: 700, w: 240, h: 420 },
+  { id: 'escalera_central', name: 'Escaleras Principales', x: 1040, y: 460, w: 240, h: 180 },
+  { id: 'aseos', name: 'Aseos Suberri', x: 860, y: 460, w: 160, h: 180 },
+  { id: 'despacho_este', name: 'Despacho Dirección', x: 1620, y: 500, w: 240, h: 180 }
 ];
 
-const EMERGENCY_BTN_POS = { x: 1000, y: 300, radius: 45 };
+const EMERGENCY_BTN_POS = { x: 1040, y: 660, radius: 45 };
 
 const WALLS = [
-  [50, 50, 1950, 50], [1950, 50, 1950, 1450], [1950, 1450, 50, 1450], [50, 1450, 50, 50],
-  [800, 150, 800, 450], [1200, 150, 1200, 450], [800, 150, 950, 150], [1050, 150, 1200, 150],
-  [800, 450, 920, 450], [1080, 450, 1200, 450], [500, 400, 500, 650], [750, 400, 750, 520],
-  [750, 580, 750, 650], [500, 400, 750, 400], [500, 650, 750, 650], [450, 700, 450, 950],
-  [700, 700, 700, 800], [700, 880, 700, 950], [450, 700, 700, 700], [450, 950, 700, 950],
-  [100, 500, 350, 500], [100, 900, 350, 900], [100, 500, 100, 900], [350, 500, 350, 630],
-  [350, 770, 350, 900], [950, 950, 1250, 950], [950, 1200, 1250, 1200], [950, 950, 950, 1020],
-  [950, 1100, 950, 1200], [1250, 950, 1250, 1200], [1350, 200, 1650, 200], [1650, 200, 1650, 450],
-  [1350, 450, 1500, 450], [1500, 600, 1850, 600], [1850, 600, 1850, 900], [1500, 900, 1850, 900],
-  [1500, 600, 1500, 700], [1500, 800, 1500, 900], [1350, 1050, 1650, 1050], [1350, 1300, 1650, 1300],
-  [1650, 1050, 1650, 1300], [1350, 1050, 1350, 1150], [1350, 1220, 1350, 1300]
+  // Perímetro exterior
+  [280, 140, 1880, 140],
+  [1880, 140, 1880, 1140],
+  [1880, 1140, 280, 1140],
+  [280, 1140, 280, 140],
+
+  // Aulas Norte
+  [740, 140, 740, 420], [1000, 140, 1000, 420],
+  [740, 420, 840, 420], [900, 420, 1000, 420],
+  [1000, 140, 1000, 420], [1300, 140, 1300, 420],
+  [1000, 420, 1120, 420], [1180, 420, 1300, 420],
+  [1300, 140, 1300, 420], [1600, 140, 1600, 420],
+  [1300, 420, 1420, 420], [1480, 420, 1600, 420],
+  [1600, 140, 1600, 480],
+  [1600, 480, 1720, 480], [1780, 480, 1880, 480],
+
+  // Núcleo Central (Aseos y Escaleras)
+  [860, 460, 1020, 460], [860, 640, 1020, 640],
+  [860, 460, 860, 520], [860, 580, 860, 640],
+  [1020, 460, 1020, 640],
+  [1020, 460, 1280, 460], [1020, 640, 1280, 640],
+  [1280, 460, 1280, 520], [1280, 580, 1280, 640],
+
+  // Ala Oeste
+  [580, 420, 580, 520], [580, 580, 580, 680],
+  [280, 680, 580, 680],
+  [580, 680, 580, 760], [580, 820, 580, 1140],
+
+  // Ala Este
+  [1600, 480, 1600, 560], [1600, 620, 1600, 700],
+
+  // Aulas Sur
+  [580, 700, 700, 700], [760, 700, 980, 700],
+  [1040, 700, 1260, 700], [1320, 700, 1520, 700],
+  [1580, 700, 1780, 700], [1840, 700, 1880, 700],
+  [870, 700, 870, 1140], [1150, 700, 1150, 1140],
+  [1430, 700, 1430, 1140], [1670, 700, 1670, 1140]
 ];
 
 const VENTS = [
-  { id: 'vent_cafeteria', x: 1150, y: 180 },
-  { id: 'vent_admin', x: 1200, y: 980 },
-  { id: 'vent_hall_e', x: 1400, y: 550 },
-  { id: 'vent_reactor_up', x: 150, y: 530 },
-  { id: 'vent_upper_engine', x: 480, y: 230 },
-  { id: 'vent_reactor_down', x: 150, y: 870 },
-  { id: 'vent_lower_engine', x: 480, y: 1100 },
-  { id: 'vent_electrical', x: 480, y: 730 },
-  { id: 'vent_medbay', x: 530, y: 430 },
-  { id: 'vent_security', x: 380, y: 580 },
-  { id: 'vent_weapons', x: 1600, y: 230 },
-  { id: 'vent_nav', x: 1800, y: 630 },
-  { id: 'vent_shields', x: 1600, y: 1250 }
+  { id: 'vent_aula101', x: 800, y: 220 },
+  { id: 'vent_aseos', x: 920, y: 520 },
+  { id: 'vent_aula104', x: 700, y: 800 },
+  { id: 'vent_profesores', x: 380, y: 800 },
+  { id: 'vent_lab_norte', x: 1720, y: 240 },
+  { id: 'vent_escalera', x: 1220, y: 520 },
+  { id: 'vent_taller1', x: 1540, y: 820 },
+  { id: 'vent_taller2', x: 1780, y: 820 }
 ];
 
 const SABOTAGE_STATIONS = [
-  { id: 'o2_panel_1', type: 'critical_o2', name: 'Terminal O2', x: 1150, y: 680 },
-  { id: 'o2_panel_2', type: 'critical_o2', name: 'Terminal Admin', x: 1120, y: 1120 },
-  { id: 'lights_panel', type: 'lights', name: 'Panel de Luces', x: 650, y: 730 },
-  { id: 'comms_panel', type: 'comms', name: 'Antena de Señal', x: 1180, y: 1300 }
+  { id: 'o2_panel_1', type: 'critical_o2', name: 'Gas Laboratorio', x: 1740, y: 380 },
+  { id: 'o2_panel_2', type: 'critical_o2', name: 'Purga Taller 1', x: 1540, y: 1020 },
+  { id: 'lights_panel', type: 'lights', name: 'Cuadro General Suberri', x: 1820, y: 1040 },
+  { id: 'comms_panel', type: 'comms', name: 'Rack Servidores', x: 440, y: 520 }
 ];
 
 // --- In-Game UI & Controls ---
@@ -527,15 +548,15 @@ document.getElementById('btn-sab-comms').addEventListener('click', () => {
   document.getElementById('sabotage-modal').classList.add('hidden');
 });
 document.getElementById('btn-sab-doors-elec').addEventListener('click', () => {
-  ws.send(JSON.stringify({ type: 'SABOTAGE', sabotageType: 'doors', target: 'electrical' }));
+  ws.send(JSON.stringify({ type: 'SABOTAGE', sabotageType: 'doors', target: 'taller_2' }));
   document.getElementById('sabotage-modal').classList.add('hidden');
 });
 document.getElementById('btn-sab-doors-med').addEventListener('click', () => {
-  ws.send(JSON.stringify({ type: 'SABOTAGE', sabotageType: 'doors', target: 'medbay' }));
+  ws.send(JSON.stringify({ type: 'SABOTAGE', sabotageType: 'doors', target: 'laboratorio_norte' }));
   document.getElementById('sabotage-modal').classList.add('hidden');
 });
 document.getElementById('btn-sab-doors-cafe').addEventListener('click', () => {
-  ws.send(JSON.stringify({ type: 'SABOTAGE', sabotageType: 'doors', target: 'cafeteria' }));
+  ws.send(JSON.stringify({ type: 'SABOTAGE', sabotageType: 'doors', target: 'sala_reuniones' }));
   document.getElementById('sabotage-modal').classList.add('hidden');
 });
 
@@ -987,50 +1008,93 @@ function renderCanvasLoop() {
   // Center camera
   ctx.translate(width / 2 - camera.x, height / 2 - camera.y);
 
-  // 1. Draw Starry/Void Background
-  ctx.fillStyle = '#060911';
-  ctx.fillRect(-200, -200, 2400, 1900);
+  // 1. Draw Architectural Floor & Corridors Background (Plano de Evacuación Suberri)
+  ctx.fillStyle = '#0a0f1d';
+  ctx.fillRect(100, 50, 2000, 1200);
+
+  // Pasillo Central longitudinal (conecta todas las aulas y escaleras)
+  ctx.fillStyle = '#18243c';
+  ctx.fillRect(280, 420, 1600, 280);
 
   // 2. Draw Rooms floor
   ROOMS.forEach(r => {
-    ctx.fillStyle = '#141d33';
+    // Differentiation for special rooms
+    if (r.id === 'sala_reuniones') {
+      ctx.fillStyle = '#1a2942'; // Professors room
+    } else if (r.id === 'aula_104') {
+      ctx.fillStyle = '#162b3a'; // Safe meeting point
+    } else if (r.id === 'aseos') {
+      ctx.fillStyle = '#162233'; // Restrooms
+    } else if (r.id === 'escalera_central') {
+      ctx.fillStyle = '#222f47'; // Staircase
+    } else {
+      ctx.fillStyle = '#141d33'; // Classrooms / Workshops
+    }
     ctx.fillRect(r.x, r.y, r.w, r.h);
 
-    // Subtle grid pattern
+    // Grid pattern inside classrooms
     ctx.strokeStyle = '#1b2745';
     ctx.lineWidth = 1;
     ctx.strokeRect(r.x, r.y, r.w, r.h);
 
     // Room Label
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-    ctx.font = 'bold 24px Rajdhani';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+    ctx.font = 'bold 20px Rajdhani';
     ctx.textAlign = 'center';
     ctx.fillText(r.name.toUpperCase(), r.x + r.w / 2, r.y + r.h / 2);
   });
 
-  // Corridors floor outline
-  ctx.strokeStyle = '#1e293b';
-  ctx.lineWidth = 2;
+  // Dibujar flechas de evacuación en el pasillo como en el plano de Somorrostro
+  ctx.strokeStyle = 'rgba(16, 185, 129, 0.25)';
+  ctx.lineWidth = 3;
+  [650, 850, 1050, 1250, 1450].forEach(fx => {
+    // Flechas hacia el hall central
+    ctx.beginPath();
+    ctx.moveTo(fx, 560); ctx.lineTo(fx + (fx < 1040 ? 30 : -30), 560);
+    ctx.stroke();
+  });
 
-  // 3. Draw Emergency Table in Cafeteria
+  // Dibujar Escaleras Centrales decorativas (Peldaños)
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 2;
+  for (let sy = 480; sy <= 620; sy += 18) {
+    ctx.beginPath();
+    ctx.moveTo(1060, sy); ctx.lineTo(1260, sy);
+    ctx.stroke();
+  }
+
+  // 3. Draw Emergency Evacuation Point / Meeting Table (Hall Central Suberri)
   ctx.beginPath();
   ctx.arc(EMERGENCY_BTN_POS.x, EMERGENCY_BTN_POS.y, EMERGENCY_BTN_POS.radius, 0, Math.PI * 2);
-  ctx.fillStyle = '#1f293d';
+  ctx.fillStyle = '#1e2d4a';
   ctx.fill();
   ctx.lineWidth = 4;
-  ctx.strokeStyle = '#3b82f6';
+  ctx.strokeStyle = '#10b981'; // Green evacuation circle
   ctx.stroke();
 
-  // Emergency Button Icon
+  // Punto azul "USTED ESTÁ AQUÍ" del plano de evacuación
   ctx.beginPath();
-  ctx.arc(EMERGENCY_BTN_POS.x, EMERGENCY_BTN_POS.y, 18, 0, Math.PI * 2);
+  ctx.arc(730, 860, 28, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(30, 58, 138, 0.7)';
+  ctx.fill();
+  ctx.strokeStyle = '#3b82f6';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.fillStyle = '#93c5fd';
+  ctx.font = 'bold 10px Rajdhani';
+  ctx.textAlign = 'center';
+  ctx.fillText('PTO. ENCUENTRO', 730, 863);
+
+  // Emergency Button Icon en Hall
+  ctx.beginPath();
+  ctx.arc(EMERGENCY_BTN_POS.x, EMERGENCY_BTN_POS.y, 20, 0, Math.PI * 2);
   ctx.fillStyle = lastServerTick.sabotages.critical.active ? '#6b7280' : '#ef4444';
   ctx.fill();
   ctx.fillStyle = '#fff';
-  ctx.font = 'bold 12px Orbitron';
+  ctx.font = 'bold 11px Orbitron';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('EMERG', EMERGENCY_BTN_POS.x, EMERGENCY_BTN_POS.y);
+  ctx.fillText('ALARMA', EMERGENCY_BTN_POS.x, EMERGENCY_BTN_POS.y);
 
   // 4. Draw Vents (Visible to Criminals, subtle grate for Innocent)
   VENTS.forEach(v => {
@@ -1293,25 +1357,24 @@ function renderCanvasLoop() {
   if (doors) {
     ctx.strokeStyle = '#ef4444';
     ctx.lineWidth = 10;
-    if (doors.cafeteria > 0) {
+    if (doors.sala_reuniones > 0) {
       ctx.beginPath();
-      ctx.moveTo(950, 150); ctx.lineTo(1050, 150);
-      ctx.moveTo(920, 450); ctx.lineTo(1080, 450);
+      ctx.moveTo(580, 760); ctx.lineTo(580, 820);
       ctx.stroke();
     }
-    if (doors.electrical > 0) {
+    if (doors.aula_101 > 0) {
       ctx.beginPath();
-      ctx.moveTo(700, 800); ctx.lineTo(700, 880);
+      ctx.moveTo(840, 420); ctx.lineTo(900, 420);
       ctx.stroke();
     }
-    if (doors.medbay > 0) {
+    if (doors.laboratorio_norte > 0) {
       ctx.beginPath();
-      ctx.moveTo(750, 520); ctx.lineTo(750, 580);
+      ctx.moveTo(1720, 480); ctx.lineTo(1780, 480);
       ctx.stroke();
     }
-    if (doors.storage > 0) {
+    if (doors.taller_2 > 0) {
       ctx.beginPath();
-      ctx.moveTo(850, 850); ctx.lineTo(950, 850);
+      ctx.moveTo(1780, 700); ctx.lineTo(1840, 700);
       ctx.stroke();
     }
   }
