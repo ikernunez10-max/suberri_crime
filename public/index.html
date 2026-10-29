@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suberri Crime - Multijugador Online</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Screen 1: Main Menu -->
+    <div id="screen-menu" class="screen active">
+      <div class="stars-bg"></div>
+      <div class="menu-container">
+        <div class="logo-box">
+          <h1 class="glitch-title">SUBERRI CRIME</h1>
+          <p class="subtitle">Deducción Social & Infiltración Táctica</p>
+        </div>
+
+        <div class="card panel">
+          <div class="form-group">
+            <label for="player-name-input">Nombre de Agente:</label>
+            <input type="text" id="player-name-input" maxlength="14" placeholder="Introduce tu alias..." value="Agente">
+          </div>
+
+          <div class="btn-group">
+            <button id="btn-create-room" class="btn btn-primary">CREAR SALA</button>
+            <div class="join-box">
+              <input type="text" id="join-code-input" maxlength="6" placeholder="CÓDIGO (6 letras)">
+              <button id="btn-join-room" class="btn btn-secondary">UNIRSE</button>
+            </div>
+          </div>
+
+          <hr class="divider">
+
+          <div class="public-rooms-header">
+            <h3>Salas Públicas Activas</h3>
+            <button id="btn-refresh-rooms" class="btn-sm">↻ Actualizar</button>
+          </div>
+          <div id="public-rooms-list" class="rooms-list">
+            <div class="empty-list">No hay salas disponibles en este momento. ¡Crea una!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 2: Lobby Screen -->
+    <div id="screen-lobby" class="screen">
+      <div class="lobby-header">
+        <div class="room-badge">
+          <span>SALA:</span>
+          <strong id="lobby-code-display">------</strong>
+          <button id="btn-copy-code" class="btn-copy" title="Copiar código">📋</button>
+        </div>
+        <div class="room-status-badge" id="lobby-player-count">Jugadores: 1/8</div>
+      </div>
+
+      <div class="lobby-body">
+        <!-- Player list -->
+        <div class="lobby-players-panel card">
+          <h3>Tripulantes en la Sala</h3>
+          <div id="lobby-players-list" class="players-grid"></div>
+        </div>
+
+        <!-- Host Settings Panel -->
+        <div class="lobby-settings-panel card">
+          <div class="settings-header">
+            <h3>Reglas de la Misión</h3>
+            <span id="host-badge" class="host-tag">ANFITRIÓN</span>
+          </div>
+
+          <div class="settings-form" id="settings-controls">
+            <div class="setting-item">
+              <label>Criminales:</label>
+              <select id="set-impostors">
+                <option value="1">1 Criminal</option>
+                <option value="2">2 Criminales</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label>Velocidad de Movimiento:</label>
+              <select id="set-speed">
+                <option value="1.0">1.0x (Normal)</option>
+                <option value="1.5" selected>1.5x (Recomendado)</option>
+                <option value="2.0">2.0x (Rápido)</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label>Cooldown de Asesinato:</label>
+              <select id="set-kill-cd">
+                <option value="15">15 Segundos</option>
+                <option value="25" selected>25 Segundos</option>
+                <option value="35">35 Segundos</option>
+                <option value="45">45 Segundos</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label>Distancia Asesinato:</label>
+              <select id="set-kill-dist">
+                <option value="short">Corta</option>
+                <option value="medium" selected>Media</option>
+                <option value="long">Larga</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label>Tiempo de Discusión / Voto:</label>
+              <select id="set-discussion-time">
+                <option value="15">15s / 30s</option>
+                <option value="20" selected>20s / 35s</option>
+                <option value="30">30s / 45s</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label>Tareas por Inocente:</label>
+              <select id="set-tasks-count">
+                <option value="2">2 Tareas</option>
+                <option value="3">3 Tareas</option>
+                <option value="4" selected>4 Tareas</option>
+                <option value="5">5 Tareas</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="lobby-actions">
+            <button id="btn-start-game" class="btn btn-success btn-large">INICIAR PARTIDA</button>
+            <p id="lobby-wait-text" class="wait-text">Esperando al anfitrión...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 3: Game HUD and Canvas -->
+    <div id="screen-game" class="screen">
+      <!-- HUD Top Bar -->
+      <div id="game-hud-top">
+        <div class="task-progress-box">
+          <div class="task-bar-label">TOTAL TAREAS COMPLETADAS</div>
+          <div class="task-bar-track">
+            <div id="task-progress-fill" class="task-bar-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <div class="room-indicator" id="current-room-name">Cafetería</div>
+
+        <div class="status-tags">
+          <div id="role-tag" class="role-tag crewmate">INOCENTE</div>
+          <div id="sabotage-alert" class="sabotage-badge hidden">⚠️ SABOTAJE CRÍTICO: <span id="sabotage-timer">30</span>s</div>
+        </div>
+      </div>
+
+      <!-- Task Checklist overlay -->
+      <div id="tasks-overlay" class="tasks-list-panel">
+        <h4>MISIÓN / TAREAS</h4>
+        <ul id="my-tasks-list"></ul>
+      </div>
+
+      <!-- Main Game Canvas (Map, Players, LOS Fog of War) -->
+      <canvas id="game-canvas"></canvas>
+
+      <!-- Action Buttons (Kill, Vent, Use, Sabotage, Report) -->
+      <div id="game-controls-overlay">
+        <button id="btn-action-kill" class="btn-action btn-kill hidden" disabled>
+          <span class="btn-icon">🗡️</span>
+          <span class="btn-label">MATAR</span>
+          <span id="kill-cd-text" class="cd-overlay">25s</span>
+        </button>
+        <button id="btn-action-vent" class="btn-action btn-vent hidden" disabled>
+          <span class="btn-icon">🕳️</span>
+          <span class="btn-label">VENT</span>
+        </button>
+        <button id="btn-action-sabotage" class="btn-action btn-sabotage hidden">
+          <span class="btn-icon">⚡</span>
+          <span class="btn-label">SABOTAJE</span>
+        </button>
+        <button id="btn-action-use" class="btn-action btn-use" disabled>
+          <span class="btn-icon">🖐️</span>
+          <span class="btn-label">USAR</span>
+        </button>
+        <button id="btn-action-report" class="btn-action btn-report" disabled>
+          <span class="btn-icon">📢</span>
+          <span class="btn-label">REPORTAR</span>
+        </button>
+      </div>
+
+      <!-- Minimap / Sabotage Map Overlay (Criminals or Security) -->
+      <div id="sabotage-modal" class="modal hidden">
+        <div class="modal-content sabotage-window">
+          <div class="modal-header">
+            <h3>PANEL DE SABOTAJE TÁCTICO</h3>
+            <button class="modal-close" id="btn-close-sabotage">✖</button>
+          </div>
+          <div class="sabotage-map-view">
+            <p>Selecciona un sabotaje en el sistema:</p>
+            <div class="sabotage-options-grid">
+              <button class="sabotage-card critical" id="btn-sab-o2">
+                <div class="sab-icon">☣️</div>
+                <div class="sab-title">Soporte Vital (O2)</div>
+                <div class="sab-desc">Sabotaje letal con cuenta de 30s. Requiere reparar 2 terminales.</div>
+              </button>
+              <button class="sabotage-card" id="btn-sab-lights">
+                <div class="sab-icon">💡</div>
+                <div class="sab-title">Corte Eléctrico</div>
+                <div class="sab-desc">Reduce el rango de visión de todos los inocentes al mínimo.</div>
+              </button>
+              <button class="sabotage-card" id="btn-sab-comms">
+                <div class="sab-icon">📡</div>
+                <div class="sab-title">Interferir Señal</div>
+                <div class="sab-desc">Oculta las listas de tareas y las barras de progreso.</div>
+              </button>
+              <button class="sabotage-card doors" id="btn-sab-doors-elec">
+                <div class="sab-icon">🔒</div>
+                <div class="sab-title">Cerrar Electricidad</div>
+                <div class="sab-desc">Bloquea las puertas durante 10 segundos.</div>
+              </button>
+              <button class="sabotage-card doors" id="btn-sab-doors-med">
+                <div class="sab-icon">🔒</div>
+                <div class="sab-title">Cerrar Enfermería</div>
+                <div class="sab-desc">Aísla a los tripulantes dentro.</div>
+              </button>
+              <button class="sabotage-card doors" id="btn-sab-doors-cafe">
+                <div class="sab-icon">🔒</div>
+                <div class="sab-title">Cerrar Cafetería</div>
+                <div class="sab-desc">Cierra accesos al botón de emergencia.</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task Modal: Wires Mini-game (RF-04) -->
+      <div id="task-modal-wires" class="modal hidden">
+        <div class="modal-content mini-task-window">
+          <div class="modal-header">
+            <h3>CALIBRACIÓN DE CABLEADO ELÉCTRICO</h3>
+            <button class="modal-close" onclick="closeAllTaskModals()">✖</button>
+          </div>
+          <p class="task-instruction">Une los conectores del mismo color y símbolo (Accesible).</p>
+          <div class="wires-canvas-container">
+            <svg id="wires-svg" width="460" height="280">
+              <!-- Rendered dynamic lines -->
+            </svg>
+            <div class="wires-columns">
+              <div class="wire-col left" id="wires-left-col"></div>
+              <div class="wire-col right" id="wires-right-col"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task Modal: Download Mini-game (RF-04) -->
+      <div id="task-modal-download" class="modal hidden">
+        <div class="modal-content mini-task-window">
+          <div class="modal-header">
+            <h3>TRANSFERENCIA DE ARCHIVOS CONFIDENCIALES</h3>
+            <button class="modal-close" onclick="closeAllTaskModals()">✖</button>
+          </div>
+          <div class="download-task-body">
+            <div class="download-icon">💾</div>
+            <div class="download-progress-track">
+              <div id="download-progress-bar" class="download-progress-bar" style="width: 0%;"></div>
+            </div>
+            <div id="download-status-text" class="download-status">Listo para transferir...</div>
+            <button id="btn-start-download" class="btn btn-primary">DESCARGAR DATOS</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task Modal: Calibrate Reactor/O2 (RF-04) -->
+      <div id="task-modal-calibrate" class="modal hidden">
+        <div class="modal-content mini-task-window">
+          <div class="modal-header">
+            <h3>SINCRONIZACIÓN DE FRECUENCIA</h3>
+            <button class="modal-close" onclick="closeAllTaskModals()">✖</button>
+          </div>
+          <div class="calibrate-body">
+            <div class="dial-container">
+              <div class="target-frequency-indicator">Objetivo: <strong id="target-freq">100</strong> MHz</div>
+              <div class="current-frequency-indicator">Actual: <span id="current-freq">0</span> MHz</div>
+              <input type="range" id="freq-slider" min="0" max="200" value="0" class="freq-slider">
+            </div>
+            <button id="btn-calibrate-confirm" class="btn btn-success">FIJAR FRECUENCIA</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Repair Modal: Lights Switchboard (RF-06) -->
+      <div id="repair-modal-lights" class="modal hidden">
+        <div class="modal-content mini-task-window">
+          <div class="modal-header">
+            <h3>PANEL DE ALIMENTACIÓN ELÉCTRICA</h3>
+            <button class="modal-close" onclick="closeAllTaskModals()">✖</button>
+          </div>
+          <p class="task-instruction">Activa todos los interruptores hacia arriba (Luz Verde).</p>
+          <div id="switches-rack" class="switches-container"></div>
+        </div>
+      </div>
+
+      <!-- Repair Modal: O2 Code (RF-06) -->
+      <div id="repair-modal-o2" class="modal hidden">
+        <div class="modal-content mini-task-window">
+          <div class="modal-header">
+            <h3>PURGA DE OXÍGENO DE EMERGENCIA</h3>
+            <button class="modal-close" onclick="closeAllTaskModals()">✖</button>
+          </div>
+          <div class="keypad-container">
+            <div class="code-note">CÓDIGO DE SEGURIDAD: <strong>8429</strong></div>
+            <div class="keypad-screen" id="o2-keypad-screen">----</div>
+            <div class="keypad-grid" id="o2-keypad-buttons"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 4: Discussion & Voting Screen (RF-08) -->
+    <div id="screen-meeting" class="screen">
+      <div class="meeting-header">
+        <div class="meeting-title-box">
+          <h2 id="meeting-title">REUNIÓN DE EMERGENCIA</h2>
+          <p id="meeting-subtitle">Un cadáver fue reportado por Agente 1</p>
+        </div>
+        <div class="meeting-timer-box">
+          <div class="timer-label" id="meeting-phase-label">DISCUSIÓN</div>
+          <div class="timer-countdown" id="meeting-timer">15s</div>
+        </div>
+      </div>
+
+      <div class="meeting-content">
+        <!-- Voting grid -->
+        <div class="voting-grid-container card">
+          <div class="voting-grid" id="voting-players-grid"></div>
+          <div class="skip-vote-box">
+            <button id="btn-vote-skip" class="btn btn-secondary">SALTARSE EL VOTO</button>
+          </div>
+        </div>
+
+        <!-- Meeting Chat -->
+        <div class="meeting-chat-panel card">
+          <div class="chat-header">CANAL DE COMUNICACIÓN</div>
+          <div class="chat-messages" id="meeting-chat-messages"></div>
+          <div class="chat-input-row" id="chat-controls">
+            <input type="text" id="meeting-chat-input" maxlength="120" placeholder="Escribe tu argumento...">
+            <button id="btn-send-chat" class="btn btn-primary">ENVIAR</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ejection animation overlay -->
+      <div id="ejection-overlay" class="ejection-panel hidden">
+        <div class="ejection-stars"></div>
+        <div class="ejection-body">
+          <div id="ejected-avatar" class="ejected-astronaut"></div>
+          <h2 id="ejection-message">Nadie fue expulsado (Empate).</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen 5: Game Over / Victory Screen (3.2) -->
+    <div id="screen-gameover" class="screen">
+      <div class="gameover-container">
+        <h1 id="gameover-title" class="victory-title">VICTORIA DE LA TRIPULACIÓN</h1>
+        <p id="gameover-reason" class="victory-reason">Todos los criminales fueron neutralizados.</p>
+        <div class="gameover-team-preview" id="gameover-roles-list"></div>
+        <button id="btn-back-lobby" class="btn btn-primary btn-large">VOLVER AL LOBBY</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="audio.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>

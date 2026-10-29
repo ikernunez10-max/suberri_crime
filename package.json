@@ -1,0 +1,14 @@
+{
+  "name": "suberri-crime",
+  "version": "1.0.0",
+  "description": "Suberri Crime - Multiplayer Social Deduction Game (Server-Authoritative)",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "test": "node tests/run-all-tests.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.18.0"
+  }
+}
