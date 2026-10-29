@@ -24,6 +24,9 @@ const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 let camera = { x: 1000, y: 300 };
 
+// Animation state cache for players: playerId -> { x, y, walkCycle, facingRight, isMoving, footstepTimer }
+const playerAnimStates = new Map();
+
 // Resize canvas to window
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -1123,23 +1126,107 @@ function renderCanvasLoop() {
     ctx.restore();
   });
 
-  // 7. Draw Players (Visible ones from server authority payload)
+  // 7. Draw Players (Visible ones from server authority payload with smooth walk animation & facing)
+  const now = Date.now();
   lastServerTick.players.forEach(p => {
     if (p.inVent && p.id !== me.id) return; // Hidden in vent
 
-    ctx.save();
-    ctx.translate(p.x, p.y);
-
-    // Ghost transparency if dead
-    if (p.isDead) {
-      ctx.globalAlpha = 0.55;
+    // Retrieve or initialize animation state
+    let anim = playerAnimStates.get(p.id);
+    if (!anim) {
+      anim = {
+        x: p.x,
+        y: p.y,
+        walkCycle: 0,
+        facingRight: true,
+        isMoving: false,
+        footstepTimer: 0
+      };
+      playerAnimStates.set(p.id, anim);
     }
 
-    // Backpack
+    // Determine movement direction and speed for animation
+    const dx = p.x - anim.x;
+    const dy = p.y - anim.y;
+    const movedDist = Math.hypot(dx, dy);
+
+    // Smooth position interpolation (prevents jitter)
+    anim.x += dx * 0.4;
+    anim.y += dy * 0.4;
+
+    if (movedDist > 0.4) {
+      anim.isMoving = true;
+      anim.walkCycle += movedDist * 0.18;
+      if (Math.abs(dx) > 0.2) {
+        anim.facingRight = dx > 0;
+      }
+
+      // Audio footstep for local player
+      if (p.id === me.id && !p.isDead) {
+        anim.footstepTimer += movedDist;
+        if (anim.footstepTimer > 38) {
+          window.soundEngine.playFootstep();
+          anim.footstepTimer = 0;
+        }
+      }
+    } else {
+      anim.isMoving = false;
+      // Smoothly return legs to neutral stance
+      anim.walkCycle *= 0.85;
+    }
+
+    ctx.save();
+    ctx.translate(anim.x, anim.y);
+
+    // Flip horizontally based on movement direction
+    if (!anim.facingRight) {
+      ctx.scale(-1, 1);
+    }
+
+    // Ghost floating effect or walking bob
+    let bobY = 0;
+    let tiltAngle = 0;
+
+    if (p.isDead) {
+      ctx.globalAlpha = 0.55;
+      bobY = Math.sin(now / 250 + (p.id.charCodeAt(p.id.length - 1) || 0)) * 5;
+      tiltAngle = Math.sin(now / 400) * 0.08;
+    } else if (anim.isMoving) {
+      bobY = Math.abs(Math.sin(anim.walkCycle)) * -4;
+      tiltAngle = Math.sin(anim.walkCycle) * 0.08;
+    }
+
+    ctx.translate(0, bobY);
+    ctx.rotate(tiltAngle);
+
+    // 1. Backpack (moves with bob)
     ctx.fillStyle = '#334155';
     ctx.fillRect(-22, -10, 8, 20);
 
-    // Body
+    // 2. Animated Legs (stride cycle)
+    if (!p.isDead) {
+      const legStride = Math.sin(anim.walkCycle) * 7;
+      const legLiftLeft = Math.max(0, -Math.cos(anim.walkCycle)) * 3;
+      const legLiftRight = Math.max(0, Math.cos(anim.walkCycle)) * 3;
+
+      ctx.fillStyle = p.color;
+      // Left leg
+      ctx.fillRect(-14 + legStride * 0.5, 16 - legLiftLeft, 9, 10 + legLiftLeft);
+      // Right leg
+      ctx.fillRect(5 - legStride * 0.5, 16 - legLiftRight, 9, 10 + legLiftRight);
+    } else {
+      // Ghost tail
+      ctx.beginPath();
+      ctx.moveTo(-16, 16);
+      ctx.quadraticCurveTo(-8, 24 + Math.sin(now / 150) * 4, 0, 18);
+      ctx.quadraticCurveTo(8, 24 - Math.sin(now / 150) * 4, 16, 16);
+      ctx.lineTo(16, -6);
+      ctx.lineTo(-16, -6);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+    }
+
+    // 3. Body Torso
     ctx.beginPath();
     ctx.arc(0, -6, 16, Math.PI, 0, false);
     ctx.rect(-16, -6, 32, 22);
@@ -1149,11 +1236,7 @@ function renderCanvasLoop() {
     ctx.strokeStyle = '#0f172a';
     ctx.stroke();
 
-    // Legs
-    ctx.fillRect(-14, 16, 9, 10);
-    ctx.fillRect(5, 16, 9, 10);
-
-    // Visor
+    // 4. Visor with glass reflection
     ctx.beginPath();
     ctx.ellipse(4, -4, 10, 7, 0, 0, Math.PI * 2);
     ctx.fillStyle = '#38bdf8';
@@ -1162,16 +1245,31 @@ function renderCanvasLoop() {
     ctx.strokeStyle = '#0f172a';
     ctx.stroke();
 
-    // Name tag
+    // Visor gleam
+    ctx.beginPath();
+    ctx.ellipse(2, -6, 4, 2, -0.4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.fill();
+
+    // Restore un-flipped coordinate system for labels/text
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(anim.x, anim.y);
+
+    // Name tag (always readable horizontally)
     ctx.fillStyle = p.role === 'criminal' && me.role === 'criminal' ? '#ef4444' : '#ffffff';
     ctx.font = 'bold 14px Rajdhani';
     ctx.textAlign = 'center';
-    ctx.fillText(p.name, 0, -28);
+    ctx.fillText(p.name, 0, -28 + bobY);
 
     if (p.id === me.id) {
-      // Small pointer arrow above local player
+      // Pulsing pointer arrow above local player
+      const arrowBounce = Math.sin(now / 180) * 3;
       ctx.beginPath();
-      ctx.moveTo(-6, -46); ctx.lineTo(6, -46); ctx.lineTo(0, -38);
+      ctx.moveTo(-6, -46 + arrowBounce);
+      ctx.lineTo(6, -46 + arrowBounce);
+      ctx.lineTo(0, -38 + arrowBounce);
       ctx.fillStyle = '#38bdf8';
       ctx.fill();
     }
