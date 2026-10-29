@@ -934,10 +934,32 @@ function renderGameOverUI(tick) {
     `;
     preview.appendChild(d);
   });
+
+  const btnPlayAgain = document.getElementById('btn-play-again');
+  const btnBackLobby = document.getElementById('btn-back-lobby');
+  const waitText = document.getElementById('gameover-wait-text');
+
+  if (isHost) {
+    btnPlayAgain.style.display = 'inline-flex';
+    btnBackLobby.style.display = 'inline-flex';
+    waitText.classList.add('hidden');
+  } else {
+    btnPlayAgain.style.display = 'none';
+    btnBackLobby.style.display = 'none';
+    waitText.classList.remove('hidden');
+  }
 }
 
 document.getElementById('btn-back-lobby').addEventListener('click', () => {
-  showScreen('screen-lobby');
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'RETURN_TO_LOBBY' }));
+  }
+});
+
+document.getElementById('btn-play-again').addEventListener('click', () => {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'PLAY_AGAIN' }));
+  }
 });
 
 // --- Canvas 2D Rendering Engine (Tickrate & Interpolation) ---

@@ -1208,3 +1208,13 @@ input[type="text"]:focus, select:focus {
   gap: 16px;
   margin: 20px 0;
 }
+
+.gameover-actions {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.gameover-actions .btn {
+  flex: 1;
+}

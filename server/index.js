@@ -122,6 +122,25 @@ wss.on('connection', (ws) => {
           break;
         }
 
+        case 'RETURN_TO_LOBBY': {
+          const room = rooms.get(currentRoomCode);
+          if (room) {
+            room.returnToLobby(playerId);
+          }
+          break;
+        }
+
+        case 'PLAY_AGAIN': {
+          const room = rooms.get(currentRoomCode);
+          if (room) {
+            const res = room.playAgain(playerId);
+            if (!res.success) {
+              ws.send(JSON.stringify({ type: 'ERROR', message: res.reason }));
+            }
+          }
+          break;
+        }
+
         case 'INPUT': {
           const room = rooms.get(currentRoomCode);
           if (room && msg.inputs) {

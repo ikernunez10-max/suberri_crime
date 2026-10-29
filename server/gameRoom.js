@@ -496,6 +496,47 @@ class GameRoom {
     return false;
   }
 
+  returnToLobby(requesterId) {
+    if (requesterId && requesterId !== this.hostId) {
+      return false;
+    }
+
+    this.state = 'lobby';
+    this.winner = null;
+    this.winReason = '';
+    this.deadBodies = [];
+    this.chatMessages = [];
+    this.sabotages.critical.active = false;
+    this.sabotages.lights.active = false;
+    this.sabotages.comms.active = false;
+    this.emergencyMeetingsUsed.clear();
+
+    for (const player of this.players.values()) {
+      player.role = 'innocent';
+      player.isDead = false;
+      player.inVent = null;
+      player.killCooldown = this.settings.killCooldown;
+      player.tasks = [];
+      player.votedFor = null;
+      player.x = 1000 + (Math.random() * 80 - 40);
+      player.y = 280 + (Math.random() * 80 - 40);
+      player.inputs = { up: false, down: false, left: false, right: false };
+    }
+
+    this.broadcastState();
+    return true;
+  }
+
+  playAgain(requesterId) {
+    if (requesterId && requesterId !== this.hostId) {
+      return false;
+    }
+
+    // Direct new round with the exact same players
+    this.state = 'lobby';
+    return this.startGame(requesterId);
+  }
+
   // --- ACTIONS (Server Authoritative) ---
 
   handlePlayerInput(playerId, inputs) {
