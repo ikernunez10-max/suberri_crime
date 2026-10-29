@@ -1379,7 +1379,7 @@ function renderCanvasLoop() {
     }
   }
 
-  // 9. Client Fog of War Overlay (Visual smoothness)
+  // 9. Client Fog of War Overlay con Oclusión Real de Paredes (Raycasting 2D)
   if (!me.isDead) {
     let visionMult = me.role === 'criminal' ? (lastServerTick.settings.impostorVision || 2.2) : (lastServerTick.settings.crewVision || 1.6);
     if (lastServerTick.sabotages.lights.active && me.role === 'innocent') {
@@ -1387,14 +1387,107 @@ function renderCanvasLoop() {
     }
     const visionRadius = 500 * visionMult;
 
-    // Dark mask with transparent circle at player (más amplio y suave)
-    const grad = ctx.createRadialGradient(me.x, me.y, visionRadius * 0.55, me.x, me.y, visionRadius);
-    grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    grad.addColorStop(0.85, 'rgba(0, 0, 0, 0.3)');
-    grad.addColorStop(1, 'rgba(0, 0, 0, 0.94)');
+    // Recopilar todos los segmentos de pared y puertas cerradas
+    const allSegments = [...WALLS];
+    const doors = lastServerTick.sabotages.doors;
+    if (doors) {
+      if (doors.sala_reuniones > 0) allSegments.push([580, 760, 580, 820]);
+      if (doors.aula_101 > 0) allSegments.push([840, 420, 900, 420]);
+      if (doors.laboratorio_norte > 0) allSegments.push([1720, 480, 1780, 480]);
+      if (doors.taller_2 > 0) allSegments.push([1780, 700, 1840, 700]);
+    }
 
-    ctx.fillStyle = grad;
-    ctx.fillRect(camera.x - width, camera.y - height, width * 2, height * 2);
+    // Algoritmo de Visibilidad 2D: lanzar rayos a los vértices y ángulos circundantes
+    const angles = [];
+    const stepCount = 90;
+    for (let i = 0; i < stepCount; i++) {
+      angles.push((i * 2 * Math.PI) / stepCount);
+    }
+
+    // Agregar ángulos directos a los vértices de las paredes cercanas
+    for (let i = 0; i < allSegments.length; i++) {
+      const seg = allSegments[i];
+      for (const pt of [{x: seg[0], y: seg[1]}, {x: seg[2], y: seg[3]}]) {
+        if (Math.hypot(pt.x - me.x, pt.y - me.y) <= visionRadius + 50) {
+          const a = Math.atan2(pt.y - me.y, pt.x - me.x);
+          angles.push(a - 0.0008, a, a + 0.0008);
+        }
+      }
+    }
+
+    // Normalizar y ordenar ángulos
+    const uniqueAngles = Array.from(new Set(angles)).sort((a, b) => a - b);
+    const visPolygon = [];
+
+    for (let i = 0; i < uniqueAngles.length; i++) {
+      const ang = uniqueAngles[i];
+      const rayDirX = Math.cos(ang);
+      const rayDirY = Math.sin(ang);
+      const rEndX = me.x + rayDirX * visionRadius;
+      const rEndY = me.y + rayDirY * visionRadius;
+
+      let closestDist = visionRadius;
+      let hitX = rEndX;
+      let hitY = rEndY;
+
+      for (let j = 0; j < allSegments.length; j++) {
+        const seg = allSegments[j];
+        // Intersección de línea rayo con segmento de pared
+        const x1 = me.x, y1 = me.y, x2 = rEndX, y2 = rEndY;
+        const x3 = seg[0], y3 = seg[1], x4 = seg[2], y4 = seg[3];
+
+        const denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+        if (Math.abs(denom) > 0.00001) {
+          const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom;
+          const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denom;
+
+          if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+            const hitDist = t * visionRadius;
+            if (hitDist < closestDist) {
+              closestDist = hitDist;
+              hitX = x1 + t * (x2 - x1);
+              hitY = y1 + t * (y2 - y1);
+            }
+          }
+        }
+      }
+
+      visPolygon.push({ x: hitX, y: hitY });
+    }
+
+    // Dibujar la máscara de sombra profunda en el área no visible (totalmente oscura)
+    ctx.save();
+    ctx.beginPath();
+    // Rectángulo exterior gigante
+    const viewLeft = camera.x - width;
+    const viewTop = camera.y - height;
+    const viewW = width * 2;
+    const viewH = height * 2;
+    ctx.rect(viewLeft, viewTop, viewW, viewH);
+
+    // Restar el polígono de visión iluminado
+    if (visPolygon.length > 2) {
+      ctx.moveTo(visPolygon[0].x, visPolygon[0].y);
+      for (let i = visPolygon.length - 1; i >= 0; i--) {
+        ctx.lineTo(visPolygon[i].x, visPolygon[i].y);
+      }
+      ctx.closePath();
+    }
+
+    // Color de oscuridad profunda estilo niebla de guerra
+    ctx.fillStyle = 'rgba(3, 6, 12, 0.98)';
+    ctx.fill();
+
+    // Degradado sutil en el borde de visión
+    const edgeGrad = ctx.createRadialGradient(me.x, me.y, visionRadius * 0.7, me.x, me.y, visionRadius);
+    edgeGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    edgeGrad.addColorStop(1, 'rgba(3, 6, 12, 0.55)');
+    ctx.fillStyle = edgeGrad;
+    ctx.beginPath();
+    ctx.arc(me.x, me.y, visionRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
   }
 
   ctx.restore();

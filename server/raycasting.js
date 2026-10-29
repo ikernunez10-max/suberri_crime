@@ -20,17 +20,13 @@ function lineIntersectsLine(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y) {
 }
 
 // Raycast: does a line from player A to entity B cross any solid wall or closed door?
-function hasLineOfSight(x1, y1, x2, y2, walls, closedDoors = [], maxVisionRadius = 350) {
+function hasLineOfSight(x1, y1, x2, y2, walls, closedDoors = [], maxVisionRadius = 500) {
   const dist = distance(x1, y1, x2, y2);
   if (dist > maxVisionRadius) {
     return false;
   }
-  // Immediate radius of 40px is always visible (touching distance)
-  if (dist < 40) {
-    return true;
-  }
 
-  // Check walls
+  // Check walls (strictly blocks sight if crossed)
   for (let i = 0; i < walls.length; i++) {
     const w = walls[i];
     if (lineIntersectsLine(x1, y1, x2, y2, w[0], w[1], w[2], w[3])) {
