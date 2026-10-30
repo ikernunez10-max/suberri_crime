@@ -1218,3 +1218,211 @@ input[type="text"]:focus, select:focus {
 .gameover-actions .btn {
   flex: 1;
 }
+
+/* ============================================================
+   RESPONSIVE MOBILE — Suberri Crime
+   ============================================================ */
+
+/* Joystick táctil */
+#touch-joystick-area {
+  position: fixed;
+  bottom: 100px;
+  left: 20px;
+  z-index: 500;
+  pointer-events: none;
+}
+
+#touch-joystick-outer {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  pointer-events: all;
+  touch-action: none;
+}
+
+#touch-joystick-inner {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.85);
+  border: 2px solid #93c5fd;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: background 0.1s;
+}
+
+@media (max-width: 768px) {
+  /* ---- Menú principal ---- */
+  .menu-container {
+    max-width: 95vw;
+    padding: 0 12px;
+    gap: 14px;
+  }
+
+  .glitch-title {
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+  }
+
+  .input-group {
+    flex-direction: column;
+  }
+
+  .input-group input {
+    width: 100%;
+  }
+
+  .public-rooms-list {
+    max-height: 160px;
+  }
+
+  /* ---- Lobby ---- */
+  .lobby-header {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 14px;
+    align-items: flex-start;
+  }
+
+  .lobby-body {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+    padding: 10px;
+    overflow-y: auto;
+  }
+
+  .lobby-settings-panel {
+    order: -1;
+  }
+
+  .players-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .player-card {
+    padding: 10px 8px;
+  }
+
+  .player-avatar-circle {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+  }
+
+  .player-card-name {
+    font-size: 0.85rem;
+  }
+
+  .room-badge strong {
+    font-size: 1.1rem;
+  }
+
+  #btn-start-game {
+    font-size: 0.9rem;
+    padding: 12px 0;
+  }
+
+  /* ---- HUD en juego ---- */
+  #game-hud-top {
+    flex-direction: column;
+    gap: 6px;
+    top: 6px;
+    left: 8px;
+    right: 8px;
+  }
+
+  .task-progress-box {
+    width: 100%;
+  }
+
+  #current-room-name {
+    font-size: 0.75rem;
+  }
+
+  /* Botones de acción: más grandes para toque */
+  #game-controls-overlay {
+    bottom: 10px;
+    right: 10px;
+    gap: 10px;
+  }
+
+  .btn-action {
+    width: 68px;
+    height: 68px;
+  }
+
+  .btn-action .btn-icon {
+    font-size: 1.6rem;
+  }
+
+  .btn-action .btn-label {
+    font-size: 0.5rem;
+  }
+
+  /* ---- Reunión ---- */
+  .meeting-content {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .voting-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .vote-card {
+    padding: 10px 6px;
+  }
+
+  .meeting-chat-panel {
+    height: 180px;
+  }
+
+  /* ---- Modales / Ventanas ---- */
+  .modal-content,
+  .sabotage-window,
+  .task-window {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin: 10px;
+    padding: 16px;
+  }
+
+  .sabotage-options-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ---- Gameover ---- */
+  .gameover-actions {
+    flex-direction: column;
+  }
+
+  .gameover-team-preview {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .victory-title {
+    font-size: 2rem;
+  }
+
+  /* ---- Ocultar joystick en desktop ---- */
+  #touch-joystick-area {
+    display: none;
+  }
+}
+
+/* En móvil, mostrar joystick */
+@media (max-width: 768px) and (pointer: coarse) {
+  #touch-joystick-area {
+    display: block;
+  }
+}

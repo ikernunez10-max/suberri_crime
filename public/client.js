@@ -1500,3 +1500,113 @@ function escapeHtml(str) {
   if (!str) return '';
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+
+
+// ============================================================
+// JOYSTICK TÁCTIL PARA MÓVILES
+// ============================================================
+(function initTouchJoystick() {
+  // Solo mostramos el joystick en dispositivos táctiles
+  if (!('ontouchstart' in window) && !navigator.maxTouchPoints) return;
+
+  const area = document.getElementById('touch-joystick-area');
+  const outer = document.getElementById('touch-joystick-outer');
+  const inner = document.getElementById('touch-joystick-inner');
+
+  if (!area || !outer || !inner) return;
+
+  area.classList.remove('hidden');
+
+  const RADIUS = 36; // Radio máximo de desplazamiento del inner
+  let activeTouchId = null;
+  let originX = 0;
+  let originY = 0;
+
+  function getOuterCenter() {
+    const rect = outer.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  }
+
+  function updateJoystick(touchX, touchY) {
+    const center = getOuterCenter();
+    let dx = touchX - center.x;
+    let dy = touchY - center.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist > RADIUS) {
+      dx = (dx / dist) * RADIUS;
+      dy = (dy / dist) * RADIUS;
+    }
+
+    inner.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+
+    // Convertir desplazamiento a entradas de movimiento
+    const threshold = RADIUS * 0.3;
+    const newInputs = {
+      up: dy < -threshold,
+      down: dy > threshold,
+      left: dx < -threshold,
+      right: dx > threshold
+    };
+
+    let changed = false;
+    if (newInputs.up !== inputs.up || newInputs.down !== inputs.down ||
+        newInputs.left !== inputs.left || newInputs.right !== inputs.right) {
+      inputs.up = newInputs.up;
+      inputs.down = newInputs.down;
+      inputs.left = newInputs.left;
+      inputs.right = newInputs.right;
+      changed = true;
+    }
+
+    if (changed) sendInputs();
+  }
+
+  function resetJoystick() {
+    inner.style.transform = 'translate(-50%, -50%)';
+    const anyActive = inputs.up || inputs.down || inputs.left || inputs.right;
+    inputs.up = false; inputs.down = false; inputs.left = false; inputs.right = false;
+    if (anyActive) sendInputs();
+  }
+
+  outer.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (activeTouchId !== null) return;
+    const touch = e.changedTouches[0];
+    activeTouchId = touch.identifier;
+    updateJoystick(touch.clientX, touch.clientY);
+  }, { passive: false });
+
+  outer.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    for (const touch of e.changedTouches) {
+      if (touch.identifier === activeTouchId) {
+        updateJoystick(touch.clientX, touch.clientY);
+        break;
+      }
+    }
+  }, { passive: false });
+
+  outer.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    for (const touch of e.changedTouches) {
+      if (touch.identifier === activeTouchId) {
+        activeTouchId = null;
+        resetJoystick();
+        break;
+      }
+    }
+  }, { passive: false });
+
+  outer.addEventListener('touchcancel', () => {
+    activeTouchId = null;
+    resetJoystick();
+  });
+
+  // Mostrar/ocultar joystick con la pantalla de juego
+  const observer = new MutationObserver(() => {
+    const gameActive = document.getElementById('screen-game').classList.contains('active');
+    area.style.display = gameActive ? 'block' : 'none';
+  });
+  observer.observe(document.getElementById('screen-game'), { attributes: true, attributeFilter: ['class'] });
+})();

@@ -53,10 +53,10 @@ class GameRoom {
         switches: [false, true, false, true, false] // must all be true
       },
       doors: {
-        cafeteria: 0,
-        electrical: 0,
-        medbay: 0,
-        storage: 0
+        sala_reuniones: 0,
+        aula_101: 0,
+        laboratorio_norte: 0,
+        taller_2: 0
       },
       comms: {
         active: false
@@ -135,6 +135,10 @@ class GameRoom {
     };
 
     this.players.set(id, player);
+
+    // Notificar a todos los jugadores del lobby que hay un nuevo jugador
+    this.broadcastLobbyState();
+
     return { success: true, player };
   }
 
@@ -157,11 +161,18 @@ class GameRoom {
       this.recalculateTaskTotal();
       this.checkWinConditions();
     }
+
+    // Notificar al lobby si estamos en lobby
+    if (this.state === 'lobby') {
+      this.broadcastLobbyState();
+    }
   }
 
   updateSettings(newSettings, requesterId) {
     if (requesterId !== this.hostId || this.state !== 'lobby') return false;
     this.settings = { ...this.settings, ...newSettings };
+    // Notificar a todos del lobby sobre los nuevos ajustes
+    this.broadcastLobbyState();
     return true;
   }
 
@@ -807,6 +818,53 @@ class GameRoom {
     if (this.chatMessages.length > 50) this.chatMessages.shift();
 
     return true;
+  }
+
+  // --- Broadcast ligero para estado de lobby (sin FOG of War) ---
+  broadcastLobbyState() {
+    if (this.state !== 'lobby') return;
+
+    const allPlayers = Array.from(this.players.values()).map(p => ({
+      id: p.id,
+      name: p.name,
+      color: p.color
+    }));
+
+    for (const player of this.players.values()) {
+      if (!player.ws || player.ws.readyState !== 1) continue;
+      const payload = {
+        type: 'GAME_TICK',
+        roomCode: this.code,
+        hostId: this.hostId,
+        state: 'lobby',
+        settings: this.settings,
+        playerMe: {
+          id: player.id,
+          name: player.name,
+          color: player.color,
+          role: 'innocent',
+          isDead: false,
+          inVent: null,
+          killCooldown: 0,
+          tasks: [],
+          votedFor: null
+        },
+        players: allPlayers,
+        deadBodies: [],
+        tasksProgress: { completed: 0, total: 0 },
+        sabotages: {
+          critical: { active: false, timeLeft: 0, repairedPanels: [] },
+          lights: { active: false, switches: [false, false, false, false, false] },
+          doors: this.sabotages.doors,
+          comms: { active: false }
+        },
+        meeting: { reporterId: null, reason: null, phase: null, timer: 0, ejectedPlayer: null, resultText: '' },
+        chat: [],
+        winner: null,
+        winReason: ''
+      };
+      player.ws.send(JSON.stringify(payload));
+    }
   }
 
   // --- Authoritative Sync per Player (RF-03 Fog of War & Anti-Cheat) ---
